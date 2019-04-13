@@ -5,7 +5,27 @@ from pathlib import Path
 import playsound 	#play music
 import speech_recognition as sr
 import verify
+import email
+import imaplib
+import html2text
 r=sr.Recognizer()
+
+def getmessagelist(mailid,password,flag):   #flag=0 for unseen messages and 1 for seen messages
+	server=imaplib.IMAP4_SSL('imap.gmail.com')
+	HOST = 'imap.gmail.com'
+	USERNAME = mailid
+	PASSWORD = password
+	server.login(USERNAME, PASSWORD)
+	server.select("inbox", readonly=True)
+	if(flag==0):
+		(result,messages) = server.uid('search','UNSEEN')
+	else
+		(result,messages) = server.uid('search','SEEN')
+	message_list=messages[0].split()
+	return message_list
+
+def readdetailsmail(email_message):
+	
 
 def play_audio(filename):
 	playsound.playsound(filename, True)
@@ -89,17 +109,7 @@ r=sr.Recognizer()
 
 
 def checkmail(mailid,password):
-	import email
-	import imaplib
-	import html2text
-	server=imaplib.IMAP4_SSL('imap.gmail.com')
-	HOST = 'imap.gmail.com'
-	USERNAME = mailid
-	PASSWORD = password
-	server.login(USERNAME, PASSWORD)
-	server.select("inbox", readonly=True)
-	(result,messages) = server.uid('search','UNSEEN')
-	message_list=messages[0].split()
+	message_list=getmessagelist(mailid,password,0)
 	saysomething("You have "+str(len(message_list))+"  new emails")
 	saysomething("D you want me to read new emails   ?")
 	command=initSpeech()
@@ -175,22 +185,10 @@ def sendmail(mailid,password):
 
 
 def searchmail(mailid,password):
-	import email
-	import imaplib
-	import html2text
-	server=imaplib.IMAP4_SSL('imap.gmail.com')
-	HOST = 'imap.gmail.com'
-	USERNAME = mailid
-	PASSWORD = password
-	server.login(USERNAME, PASSWORD)
-	server.select("inbox", readonly=True)
-	(result,messages) = server.uid('search','SEEN')
-	(result,messages1) =server.uid('search','UNSEEN')
-	#saysomething("The Unseen messages are   :")
-	message_list=messages[0].split()
+	message_list=getmessagelist(mailid,password,0)  #get unread message list
 	len1=min(len(message_list),50)
 	message_list=message_list[len(message_list)-len1:]
-	message_list1=messages1[0].split()
+	message_list1=getmessagelist(mailid,password,1)    #get read message list
 	len2=min(len(message_list1),50)
 	message_list=message_list[len(message_list1)-len2:]
 	message_list=message_list+message_list1
@@ -221,6 +219,11 @@ def searchmail(mailid,password):
 		result2,email_data=server.uid('fetch',new_mail,'(RFC822)')
 		raw_email=email_data[0][1].decode("utf-8")
 		email_message=email.message_from_string(raw_email)
+
+		########################   date cheking            ###########################
+
+		#need some standerd
+
 		"""if "date" in search_command and email_message['Date']==keyword_search:
 			saysomething("One mail found with said match")
 			saysomething("The details of the mail is   :")
