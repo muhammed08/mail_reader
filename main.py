@@ -24,9 +24,6 @@ def getmessagelist(mailid,password,flag):   #flag=0 for unseen messages and 1 fo
 	message_list=messages[0].split()
 	return message_list
 
-def readdetailsmail(email_message):
-	
-
 def play_audio(filename):
 	playsound.playsound(filename, True)
 
